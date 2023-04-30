@@ -1,4 +1,5 @@
 import numpy as np
+from time import time 
 from animate import Animate
 from algorithms import Algorithms
 from initialLattices import InitialLattcie
@@ -26,7 +27,7 @@ class Simulate(object):
         #=======================================================
         # Create inital array dependant on immunity criteria
 
-        if self.immuneBool:
+        if self.immuneBool == str('true'):
             self.array= self.initialLattcie.generateImmunityLattice()
         else:
             self.array= self.initialLattcie.generateRegularLattice()
@@ -37,7 +38,14 @@ class Simulate(object):
 
         if self.timestep % self.timestepLimit*self.visPeriod == 0:
             self.animation.drawImage(self.array)
-            
+
+    def writeOutData(self):
+        #========================================================
+        # Write relevant data to file
+
+        with open('../data/visualisationData.csv', 'ab') as f:
+            #f.write(b'\n')
+            np.savetxt(f, np.array([[1]]), delimiter= ',', fmt= '%d')
 
     def runSimulation(self):
         #=======================================================
@@ -54,6 +62,7 @@ class Simulate(object):
             if self.timestep % self.timestepLimit == 0:
                 self.sweep+= 1
             self.updateVisualisation()
+
 
 
     

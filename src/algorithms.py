@@ -17,14 +17,42 @@ class Algorithms(object):
         self.p1= p1
         self.p2= p2
         self.p3= p3
+        self.sirsey= {  0:'S', 1:'I', 2:'R', 3:'V'}
 
     def generateRandomIndex(self):
         #======================================================
         # Generate a random index within the bounds of an array
 
-        self.index= (np.random.randint(0, high= self.N, size= 2))
+        self.index= tuple(np.random.randint(0, high= self.N, size= 2))
 
-    def findNeighbourStates(self):
+    def periodic_boundaries(self):
+        #=======================================================
+        # Apply periodic boundaries to neighbour indices if necesary
+        self.neighbourList= [self.iU, self.iD, self.iL, self.iR]
+        
+        for i in range(len(self.neighbourList)):
+            if (self.neighbourList[i][0]) >= self.N:
+                self.neighbourList[i][0]= 0
+            if (self.neighbourList[i][1]) >= self.N:
+                self.neighbourList[i][1]= 0    
+        self.neighbourList= tuple(self.neighbourList) 
+
+    def findNearestNeighbours(self):
+        #=======================================================
+        # Return indices of nearest neighbours of a lattice points
+        
+        self.iD, self.iU= [self.index[0]+1, self.index[1]], [self.index[0]-1, self.index[1]]
+        self.iL, self.iR= [self.index[0], self.index[1]-1], [self.index[0], self.index[1]+1]
+        self.periodic_boundaries()
+
+    def findNeigbourStates(self):
+        #=======================================================
+        # Return list containing state of neighbour cells
+        self.findNearestNeighbours()
+        self.neigbourVals= [self.array[i[0]][i[1]] for i in [self.iU, self.iD, self.iL, self.iR]]
+        self.neigbourStates= [self.sirsKey[i] for i in tuple(self.neigbourVals)]
+
+#    def findNeighbourStates(self):
         #======================================================
         # Find the state of neighbours for randomly selected array element
 
@@ -37,7 +65,9 @@ class Algorithms(object):
         #======================================================
         # Return boolean stating if neighbour of state is infected
 
-        self.infectedNeighbour= self.U == 1 & self.D == 1 & self.R == 1 & self.L == 1
+        self.infectedNeighbour= False
+        if str('I') in self.neigbourStates:
+            self.infectedNeighbour= True
 
     def isSucceptable(self):
         #======================================================
@@ -55,21 +85,21 @@ class Algorithms(object):
         #======================================================
         # Apply dedicated SIRS rule for a succeptable element
 
-        if self.infectedNeighbour and np.random.rand <= self.p1:
+        if self.infectedNeighbour and np.random.rand() <= self.p1:
             self.array[self.index] = 1
         
     def applySirsRuleI(self):
         #======================================================
         # Apply dedicated SIRS rule for a succeptable element
 
-        if np.random.rand <= self.p2:
+        if np.random.rand() <= self.p2:
             self.array[self.index] = 2
 
     def applySirsRuleR(self):
         #======================================================
         # Apply dedicated SIRS rule for a succeptable element
 
-        if np.random.rand <= self.p3:
+        if np.random.rand() <= self.p3:
             self.array[self.index] = 1
 
     def updateArray(self, array):
@@ -78,6 +108,7 @@ class Algorithms(object):
 
         self.array= array
         self.generateRandomIndex()
+        self.findNeigbourStates()
 
         if self.array[self.index] == 0:
             self.isInfected()
